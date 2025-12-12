@@ -1,0 +1,62 @@
+```{r}
+library(shiny)
+library(dplyr)
+
+ui <- fluidPage(
+  titlePanel("Data Entry Example"),
+
+  sidebarLayout(
+    sidebarPanel(
+      textInput("name", "Name:"),
+      numericInput("age", "Age:", value = NA, min = 0, max = 120),
+      selectInput("sex", "Sex:", choices = c("Female", "Male")),
+      
+      actionButton("save", "Save Entry")
+    ),
+
+    mainPanel(
+      h3("Current Data"),
+      tableOutput("table")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+
+  data_file <- "data_entry.csv"
+
+  # Initialize file if missing
+  if (!file.exists(data_file)) {
+    write.csv(data.frame(Name = character(),
+                         Age = numeric(),
+                         Sex = character()),
+              data_file, row.names = FALSE)
+  }
+
+  # Load data
+  load_data <- reactive({
+    read.csv(data_file)
+  })
+
+  # Save new entry
+  observeEvent(input$save, {
+    new_entry <- data.frame(
+      Name = input$name,
+      Age  = input$age,
+      Sex  = input$sex
+    )
+    old_data <- load_data()
+    write.csv(rbind(old_data, new_entry),
+              data_file, row.names = FALSE)
+  })
+
+  # Show table
+  output$table <- renderTable({
+    load_data()
+  })
+}
+
+shinyApp(ui, server)
+
+```
+
