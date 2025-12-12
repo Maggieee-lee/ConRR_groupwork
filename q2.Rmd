@@ -1,0 +1,44 @@
+
+---
+title: "test"
+author: "Qimiao Li"
+date: "2025-12-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(openxlsx)
+library(here)
+library(dplyr)
+```
+
+## Loading data
+
+```{r}
+data1 <- read.xlsx(here("all_data.xlsx"))
+
+```
+
+## Merge PH & MH
+
+```{r}
+all_data$Health_issue <- ifelse(all_data$PH == "Y" | all_data$MH == "Y", 1, 0)
+all_data$Belief_new <- ifelse(all_data$Belief == "Y", 1, 0)
+```
+
+## Glm Belief~Health_issue
+```{r}
+model <- glm(Belief_new ~ Health_issue, family = "binomial", data = all_data)
+summary(model)
+```
+## Glm + confounders （add region later)
+```{r}
+model <- glm(Belief_new ~ Health_issue + Smoker + SES5 + Gender + Region, family = "binomial", data = all_data)
+summary(model)
+```
+```
+
