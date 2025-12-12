@@ -1,6 +1,6 @@
 ---
-title: "test"
-author: "Qimiao Li"
+title: "Groupwork(Jialin, Ruiling, Qimiao"
+author: "CrazyFriday"
 date: "2025-12-12"
 output: html_document
 ---
@@ -49,7 +49,6 @@ df5 <- df5 %>%
     MH = Mental
   ) %>%
   mutate(
-    Region = "SE",  
     ID = NULL       # remove
   ) %>%
   select(all_of(target_cols))
@@ -61,8 +60,9 @@ all_data <- all_data %>%
     Gender = case_when(
       Gender %in% c("f", "female") ~ "Female",
       Gender %in% c("m", "male")     ~ "Male",
+      Gender %in% c("gd")     ~ "GD",
       is.na(Gender)                         ~ NA_character_,  # leave NA unchanged
-      TRUE                                  ~ "Other"         # all other values
+      TRUE                         ~ NA_character_        # all other values
     )
   )
 all_data <- all_data %>%
@@ -88,7 +88,7 @@ all_data <- all_data %>%
     SES5 = factor(SES5, levels = c("L1", "L2", "L3", "L4", "L5")),
 
     # gender categories
-    Gender = factor(Gender, levels = c("Female", "Male", "Other")),
+    Gender = factor(Gender, levels = c("Female", "Male", "GD")),
 
     # region (auto or manual)
     Region = factor(Region)
@@ -108,12 +108,99 @@ all_data <- all_data %>%
     SES5 = factor(SES5, levels = c("L1", "L2", "L3", "L4", "L5")),
 
     # gender categories
-    Gender = factor(Gender, levels = c("Female", "Male", "Other")),
+    Gender = factor(Gender, levels = c("Female", "Male", "GD")),
 
     # region (auto or manual levels)
     Region = factor(Region)
   )
+## ageband
+
+all_data$AgeBand <- cut(
+  all_data$Age,
+  breaks = c(-Inf, 10, 20, 30, 40, 50, 60, 70, Inf),
+  labels = 1:8,
+  right = TRUE
+)
 summary(all_data)
+
+```
+
+```{r}
+## Merge PH & MH
+
+all_data$Health_issues <- ifelse(all_data$PH == "Y" | all_data$MH == "Y", 1, 0)
+all_data$Belief_new <- ifelse(all_data$Belief == "Y", 1, 0)
+```
+
+## Glm Belief~Health_issue
+```{r}
+model <- glm(Belief_new ~ Health_issues, family = "binomial", data = all_data)
+summary(model)
+```
+## Glm + confounders 
+```{r}
+model <- glm(Belief_new ~ Health_issues + Smoker + SES5 + Gender + Region, family = "binomial", data = all_data)
+summary(model)
+```
+## Adjusted prevelence
+
+```{r cars}
+
+str(all_data)
+model <- glm(Health_issues ~ Age +Smoker+ Belief + SES5 +Gender+Region, data = all_data, family = binomial)
+summary(model)## +Region
+predict_prob <- predict(model, type = "response")
+adjusted_prevalence <- mean(predict_prob)
+adjusted_prevalence
+
+```
+## Validate representiveness
+```{r cars}
+POP <- readRDS("POP.rds")
+class(POP)  
+str(POP)    
+head(POP)  
+View(POP)
+
+table(all_data$Gender) / nrow(all_data)
+table(POP$Gender) / nrow(POP)
+
+tab1 <- rbind(
+  all_data = table(all_data$Gender),
+  POP = table(POP$Gender)
+)
+chisq.test(tab1)
+
+
+table(all_data$Region) / nrow(all_data)
+table(POP$Region) / nrow(POP)
+
+tab2 <- rbind(
+  all_data = table(all_data$Region),
+  POP = table(POP$Region)
+)
+chisq.test(tab2)
+
+
+
+table(all_data$SES5) / nrow(all_data)
+table(POP$SES) / nrow(POP)
+
+tab3 <- rbind(
+  all_data = table(all_data$SES5),
+  POP = table(POP$SES)
+)
+chisq.test(tab3)
+
+
+table(all_data$AgeBand) / nrow(all_data)
+table(POP$AgeBand) / nrow(POP)
+
+tab4 <- rbind(
+  all_data = table(all_data$AgeBand),
+  POP = table(POP$AgeBand)
+)
+chisq.test(tab4)
 
 ```
 
