@@ -1,0 +1,46 @@
+---
+title: "test"
+author: "Qimiao Li"
+date: "2025-12-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(openxlsx)
+library(here)
+library(dplyr)
+```
+
+## Loading data
+
+```{r cars}
+all_data <- read.xlsx(here("all_data.xlsx"))
+View(A)
+dim(A)
+
+```
+
+
+## Adjusted prevelence
+
+```{r cars}
+all_data$Health_issues <- ifelse(all_data$PH == "Y" | A$MH == "Y", 1, 0)
+all_data$Health_issues<-as.factor(all_data$Health_issues)
+str(all_data)
+model <- glm(Health_issues ~ Age +Smoker+ Belief + SES5 +Gender+Region, data = all_data, family = binomial)
+summary(model)## +Region
+predict_prob <- predict(model, type = "response")
+adjusted_prevalence <- mean(predict_prob)
+adjusted_prevalence
+
+```
+
+```{r cars}
+
+
+
+```
