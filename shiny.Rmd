@@ -18,6 +18,7 @@ ui <- fluidPage(
             selectInput("belief", "Belief", choices = c("Yes", "No", "Other")),
             selectInput("ph", "Physical", choices = c("Yes", "No", "Other")),
             selectInput("mh", "Mental", choices = c("Yes", "No", "Other")),
+             selectInput("smoker", "Smoker", choices = c("Yes", "No", "Other")),
             actionButton("add", "Add Record", class = "btn-primary"),
             hr(),
             downloadButton("downloadData", "Download CSV")
@@ -39,6 +40,7 @@ server <- function(input, output, session) {
         Belief = character(),
         Physical = character(),
         Mental = character(),
+        Smoker = character(),
         stringsAsFactors = FALSE
     ))
 
@@ -52,6 +54,7 @@ server <- function(input, output, session) {
             Belief = input$belief,
             Physical = input$ph,
             Mental = input$mh,
+            Smoker   = input$smoker, 
             stringsAsFactors = FALSE
         )
 
@@ -73,6 +76,8 @@ server <- function(input, output, session) {
         }
     )
 }
+
+
 
 shinyApp(ui, server)
 
