@@ -1,0 +1,32 @@
+---
+title: "test"
+author: "Qimiao Li"
+date: "2025-12-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(openxlsx)
+library(here)
+```
+
+## Loading data
+
+```{r cars}
+data1 <- read.xlsx(here("Q1_data.xlsx"))
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
