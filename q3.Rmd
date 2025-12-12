@@ -40,7 +40,10 @@ adjusted_prevalence
 ```
 
 ```{r cars}
-
-
+POP <- readRDS("POP.rds")
+class(POP)  
+str(POP)    
+head(POP)  
+View(POP)
 
 ```
