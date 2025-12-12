@@ -1,59 +1,77 @@
 ```{r}
+                                        # Install packages if needed
+                                        # install.packages("shiny")
+                                        # install.packages("DT")
+
 library(shiny)
-library(dplyr)
+library(DT)
 
 ui <- fluidPage(
-  titlePanel("Data Entry Example"),
 
-  sidebarLayout(
-    sidebarPanel(
-      textInput("name", "Name:"),
-      numericInput("age", "Age:", value = NA, min = 0, max = 120),
-      selectInput("sex", "Sex:", choices = c("Female", "Male")),
-      
-      actionButton("save", "Save Entry")
-    ),
+    titlePanel("Data Entry App"),
 
-    mainPanel(
-      h3("Current Data"),
-      tableOutput("table")
+    sidebarLayout(
+        sidebarPanel(
+            textInput("name", "Name"),
+            numericInput("age", "Age", value = NA, min = 0, max = 120),
+            selectInput("gender", "Gender", choices = c("Male", "Female", "Other")),
+            selectInput("belief", "Belief", choices = c("Yes", "No", "Other")),
+            selectInput("ph", "Physical", choices = c("Yes", "No", "Other")),
+            selectInput("mh", "Mental", choices = c("Yes", "No", "Other")),
+            actionButton("add", "Add Record", class = "btn-primary"),
+            hr(),
+            downloadButton("downloadData", "Download CSV")
+        ),
+
+        mainPanel(
+            DTOutput("table")
+        )
     )
-  )
 )
 
 server <- function(input, output, session) {
 
-  data_file <- "data_entry.csv"
+                                        # A reactive data frame stored in memory
+    values <- reactiveVal(data.frame(
+        Name = character(),
+        Age = numeric(),
+        Gender = character(),
+        Belief = character(),
+        Physical = character(),
+        Mental = character(),
+        stringsAsFactors = FALSE
+    ))
 
-  # Initialize file if missing
-  if (!file.exists(data_file)) {
-    write.csv(data.frame(Name = character(),
-                         Age = numeric(),
-                         Sex = character()),
-              data_file, row.names = FALSE)
-  }
+                                        # Add a new record when button is clicked
+    observeEvent(input$add, {
 
-  # Load data
-  load_data <- reactive({
-    read.csv(data_file)
-  })
+        new_row <- data.frame(
+            Name = input$name,
+            Age = input$age,
+            Gender = input$gender,
+            Belief = input$belief,
+            Physical = input$ph,
+            Mental = input$mh,
+            stringsAsFactors = FALSE
+        )
 
-  # Save new entry
-  observeEvent(input$save, {
-    new_entry <- data.frame(
-      Name = input$name,
-      Age  = input$age,
-      Sex  = input$sex
+                                        # Append to existing data
+        updated <- rbind(values(), new_row)
+        values(updated)
+    })
+
+                                        # Show the table
+    output$table <- renderDT({
+        datatable(values(), options = list(pageLength = 5))
+    })
+
+                                        # Download handler
+    output$downloadData <- downloadHandler(
+        filename = function() { "data_entry.csv" },
+        content = function(file) {
+            write.csv(values(), file, row.names = FALSE)
+        }
     )
-    old_data <- load_data()
-    write.csv(rbind(old_data, new_entry),
-              data_file, row.names = FALSE)
-  })
-
-  # Show table
-  output$table <- renderTable({
-    load_data()
-  })
 }
 
 shinyApp(ui, server)
