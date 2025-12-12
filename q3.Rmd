@@ -38,7 +38,7 @@ adjusted_prevalence <- mean(predict_prob)
 adjusted_prevalence
 
 ```
-
+## Validate representiveness
 ```{r cars}
 POP <- readRDS("POP.rds")
 class(POP)  
@@ -75,5 +75,15 @@ tab3 <- rbind(
   POP = table(POP$SES)
 )
 chisq.test(tab3)
+
+
+table(all_data$AgeBand) / nrow(all_data)
+table(POP$AgeBand) / nrow(POP)
+
+tab4 <- rbind(
+  all_data = table(all_data$AgeBand),
+  POP = table(POP$AgeBand)
+)
+chisq.test(tab4)
 
 ```
