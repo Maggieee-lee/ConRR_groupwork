@@ -18,16 +18,102 @@ library(dplyr)
 ## Loading data
 
 ```{r cars}
-data1 <- read.xlsx(here("Q1_data.xlsx"))
+
+df1 <- read.xlsx(here("A.xlsx"))
+df2 <- read.xlsx(here("B.xlsx"))
+df3 <- read.xlsx(here("H.xlsx"))
+df4 <- read.xlsx(here("P.xlsx"))
+df5 <- read.xlsx(here("SouthEast.xlsx"))
+
+str(df1)
+str(df3)
+str(df4)
+str(df5)
+
+target_cols <- c("Age", "Region", "PH", "MH", "Smoker", "Belief", "SES5", "Gender")
+
+df3 <- df3 %>%
+  rename(
+    PH = Physical,
+    MH = Mental
+  ) %>%
+  mutate(
+    SES5 = NA,   # does not exist in df3
+    Name = NULL  # remove unwanted column
+  ) %>%
+  select(all_of(target_cols))
+
+df5 <- df5 %>%
+  rename(
+    PH = Phusical,   # fix misspelling
+    MH = Mental
+  ) %>%
+  mutate(
+    Region = "SE",  
+    ID = NULL       # remove
+  ) %>%
+  select(all_of(target_cols))
+all_data <- bind_rows(df1, df2, df3, df4, df5)
+
+all_data <- all_data %>%
+  mutate(
+    Gender = tolower(Gender),   # standardize to lower case
+    Gender = case_when(
+      Gender %in% c("f", "female") ~ "Female",
+      Gender %in% c("m", "male")     ~ "Male",
+      is.na(Gender)                         ~ NA_character_,  # leave NA unchanged
+      TRUE                                  ~ "Other"         # all other values
+    )
+  )
+all_data <- all_data %>%
+  mutate(
+    Smoker = case_when(
+      Smoker == "Current" ~ "Y",
+      TRUE                ~ Smoker   # keep Y, No, NA, etc. as they are
+    )
+  )
+
+
+all_data <- all_data %>%
+  mutate(
+    # categorical yes/no variables
+    PH     = factor(PH,     levels = c("N", "Y")),
+    MH     = factor(MH,     levels = c("N", "Y")),
+    Belief = factor(Belief, levels = c("N", "Y")),
+
+    # smoker variable
+    Smoker = factor(Smoker, levels = c("N", "Y")),
+
+    # SES ordered factor
+    SES5 = factor(SES5, levels = c("L1", "L2", "L3", "L4", "L5")),
+
+    # gender categories
+    Gender = factor(Gender, levels = c("Female", "Male", "Other")),
+
+    # region (auto or manual)
+    Region = factor(Region)
+  )
+
+all_data <- all_data %>%
+  mutate(
+    # categorical yes/no variables
+    PH     = factor(PH,     levels = c("N", "Y")),
+    MH     = factor(MH,     levels = c("N", "Y")),
+    Belief = factor(Belief, levels = c("N", "Y")),
+
+    # smoker variable
+    Smoker = factor(Smoker, levels = c("N", "Y")),
+
+    # SES ordered factor
+    SES5 = factor(SES5, levels = c("L1", "L2", "L3", "L4", "L5")),
+
+    # gender categories
+    Gender = factor(Gender, levels = c("Female", "Male", "Other")),
+
+    # region (auto or manual levels)
+    Region = factor(Region)
+  )
+summary(all_data)
 
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
