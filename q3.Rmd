@@ -46,4 +46,34 @@ str(POP)
 head(POP)  
 View(POP)
 
+table(all_data$Gender) / nrow(all_data)
+table(POP$Gender) / nrow(POP)
+
+tab1 <- rbind(
+  all_data = table(all_data$Gender),
+  POP = table(POP$Gender)
+)
+chisq.test(tab1)
+
+
+table(all_data$Region) / nrow(all_data)
+table(POP$Region) / nrow(POP)
+
+tab2 <- rbind(
+  all_data = table(all_data$Region),
+  POP = table(POP$Region)
+)
+chisq.test(tab2)
+
+
+
+table(all_data$SES5) / nrow(all_data)
+table(POP$SES) / nrow(POP)
+
+tab3 <- rbind(
+  all_data = table(all_data$SES5),
+  POP = table(POP$SES)
+)
+chisq.test(tab3)
+
 ```
